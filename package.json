@@ -16,6 +16,7 @@
     "react-hook-form": "^7.22.2",
     "react-icons": "^4.3.1",
     "react-input-mask": "^2.0.4",
+    "sass": "^1.45.1",
     "yup": "^0.32.11"
   },
   "devDependencies": {
