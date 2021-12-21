@@ -9,19 +9,25 @@ interface Items {
   name: string;
 };
 
-interface Test {
+interface Park {
   items: Items[];
   equipment: string;
   area: string;
   age: string;
   material: string;
+  painting: string;
   value: number;
   valueInstalll: number;
-
+  observations: string;
 }
 
 interface ParkValue {
-  parks: Test[]
+  parks: Park[];
+  totalParks: string;
+  cep: string;
+  user: string;
+  delivery: string;
+  payment: string;
 };
 
 const Home: NextPage = () => {
@@ -64,20 +70,77 @@ const Home: NextPage = () => {
         &&
         <form onSubmit={handleSubmit(handleCreateBudget)}>
           <h2>Orçamento</h2>
-          <label htmlFor="">Total de itens do pedido</label>
-          <input type="text" placeholder='2 parques' />
-          <label htmlFor="">Cliente</label>
-          <input type="text" placeholder='Nome da empresa ou cliente' />
-          <label htmlFor="">CEP do cliente</label>
-          <input type="number" />
+          <label htmlFor="totalParks">Total de itens do pedido</label>
+          <input id="totalParks" type="text" placeholder='2 parques' {...register("totalParks")} />
+          <label htmlFor="user">Cliente</label>
+          <input id="user" type="text" placeholder='Nome da empresa ou cliente' {...register("user")} />
+          <label htmlFor="cep">CEP do cliente</label>
+          <input id="cep" type="number" {...register("cep")} />
           <h2>Dados do orçamento</h2>
           {
             fields.map((park, index) => {
-
               return (
                 <div key={park.id}>
+                  <h2>Parque {index}</h2>
+                  <h3>Itens do Orçamento</h3>
                   <Item control={control} indexOne={index} register={register} />
-                  <button onClick={() => remove(index )}>Remover parque do orçamento</button>
+                  <h3>Características do Parque</h3>
+                  <label htmlFor={`parks.${index}.equipment`}>Medida do equipamento</label>
+                  <input
+                    id={`parks.${index}.equipment`}
+                    type="text"
+                    placeholder='2,20 x 1,00 metros'
+                    {...register(`parks.${index}.equipment`)}
+                  />
+                  <label htmlFor={`parks.${index}.area`}>Área de circulação</label>
+                  <input
+                    id={`parks.${index}.area`}
+                    type="text"
+                    placeholder='4,80 x 3,00 metros'
+                    {...register(`parks.${index}.area`)}
+                  />
+                  <label htmlFor={`parks.${index}.age`}>Idade</label>
+                  <input
+                    id={`parks.${index}.age`}
+                    type="text"
+                    placeholder='5 à 12 anos'
+                    {...register(`parks.${index}.age`)}
+                  />
+                  <label htmlFor={`parks.${index}.material`}>Material</label>
+                  <input
+                    id={`parks.${index}.material`}
+                    type="text"
+                    placeholder='Madeira de lei (Itaúba)'
+                    {...register(`parks.${index}.material`)}
+                  />
+                  <label htmlFor={`parks.${index}.painting`}>Pintura</label>
+                  <input
+                    id={`parks.${index}.painting`}
+                    type="text"
+                    placeholder='Madeira de lei (Itaúba)'
+                    {...register(`parks.${index}.painting`)}
+                  />
+                  <label htmlFor={`parks.${index}.observations`}>Observações adicionais</label>
+                  <input
+                    id={`parks.${index}.observations`}
+                    type="text"
+                    placeholder='Madeira de lei (Itaúba)'
+                    {...register(`parks.${index}.observations`)}
+                  />
+                  <label htmlFor={`parks.${index}.value`}>Valor do parque {index}</label>
+                  <input
+                    id={`parks.${index}.value`}
+                    type="text"
+                    placeholder='R$ 5.000,00'
+                    {...register(`parks.${index}.value`)}
+                  />
+                  <label htmlFor={`parks.${index}.valueInstalll`}>Valor da instalação {index}</label>
+                  <input
+                    id={`parks.${index}.valueInstalll`}
+                    type="text"
+                    placeholder='R$ 350,00'
+                    {...register(`parks.${index}.valueInstalll`)}
+                  />
                 </div>
               )
             })
@@ -89,13 +152,13 @@ const Home: NextPage = () => {
   )
 }
 
-interface Teste {
+interface ItemInterface {
   indexOne: number;
   control: Control<ParkValue, object>;
   register: UseFormRegister<ParkValue>;
 }
 
-export const Item = ({ control, indexOne, register }: Teste) => {
+export const Item = ({ control, indexOne, register }: ItemInterface) => {
 
   const { fields, remove, append } = useFieldArray({ name: `parks.${indexOne}.items`, control })
 
@@ -106,7 +169,11 @@ export const Item = ({ control, indexOne, register }: Teste) => {
           return (
             <div key={index}>
               <label htmlFor={`parks.${indexOne}.items.${index}.name`}>Item {index}</label>
-              <input type="text" {...register(`parks.${indexOne}.items.${index}.name`)} />
+              <input
+                id={`parks.${indexOne}.items.${index}.name`}
+                type="text"
+                {...register(`parks.${indexOne}.items.${index}.name`)}
+              />
               <button onClick={() => remove(index)}>Remover item do orçamento</button>
             </div>
           )
