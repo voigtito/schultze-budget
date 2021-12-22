@@ -8,7 +8,7 @@ import { ParkValue } from '../interfaces';
 import Item from '../components/Item';
 import { BsTrash } from 'react-icons/bs'
 import { usePDF } from '../contexts/usePDF';
-import InputMask from 'react-input-mask';
+import { useRouter } from 'next/router';
 
 const Home: NextPage = () => {
 
@@ -42,12 +42,13 @@ const Home: NextPage = () => {
     resolver: yupResolver(createBudgetSchema)
   })
 
-  const { fields, remove, append } = useFieldArray<ParkValue>({ name: "parks", control })
+  const { fields, remove, append } = useFieldArray<ParkValue>({ name: "parks", control });
+  const router = useRouter();
 
   async function handleCreateBudget(data: ParkValue) {
     data.totalParks = fields.length;
-    console.log(data)
     setCurrentPDF(data)
+    router.push('/pdf');
   }
 
   const {setCurrentPDF} = usePDF();
