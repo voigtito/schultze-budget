@@ -26,6 +26,7 @@ const Home: NextPage = () => {
           })
         ),
         equipment: yup.string().required("Medida do equipamento obrigatória"),
+        name: yup.string().required("Nome do parque obrigatório"),
         area: yup.string().required("Área de circulação obrigatória"),
         age: yup.string().required("Idade obrigatória"),
         material: yup.string().required("Material obrigatório"),
@@ -94,6 +95,16 @@ const Home: NextPage = () => {
                     <BsTrash onClick={() => remove(index)} color="#0b1a31" size={20} cursor="pointer" title="Deletar parque" />
                   </div>
                   <div>
+                    <div className="inputFields">
+                      <label htmlFor={`parks.${index}.name`}>Nome do Parque</label>
+                      <input
+                        id={`parks.${index}.name`}
+                        type="text"
+                        placeholder='Tarzan'
+                        {...register(`parks.${index}.name`)}
+                      />
+                      <p>{formState.errors.parks && formState.errors.parks[index].equipment ? formState.errors.parks[index].equipment?.message : " "}</p>
+                    </div>
                     <h3>Itens do Parque</h3>
                     <Item formState={formState} control={control} indexOne={index} register={register} />
                     <h3>Características do Parque</h3>

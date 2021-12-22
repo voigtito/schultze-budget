@@ -70,6 +70,7 @@
   top: 320px;
   opacity: 0.4;
   width: 300px;
+  z-index: -1;
 }
 
 .finish {
@@ -83,7 +84,8 @@
     }
 
     &:last-child {
-      max-width: 400px;
+      align-self: flex-end;
+      width: 300px;
       border: 1px solid #00F0B590;
       background-color: #02923e;
       color: #fff;

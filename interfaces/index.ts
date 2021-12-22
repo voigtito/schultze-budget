@@ -4,6 +4,7 @@ export interface Items {
 
 export interface Park {
   items: Items[];
+  name: string;
   equipment: string;
   area: string;
   age: string;
