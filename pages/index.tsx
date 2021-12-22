@@ -78,7 +78,7 @@ const Home: NextPage = () => {
               <p>{formState.errors.user ? formState.errors.user.message : " "}</p>
             </div>
             <div className="inputFields">
-              <label htmlFor="cep">CEP do cliente</label>
+              <label htmlFor="cep">Endereço do cliente</label>
               <input
                 id="cep"
                 type="text"
