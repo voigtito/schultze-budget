@@ -10,16 +10,17 @@ export interface Park {
   age: string;
   material: string;
   painting: string;
-  value: number;
-  valueInstall: number;
+  value: string | number;
+  valueInstall: string | number;
   observations: string;
 }
 
 export interface ParkValue {
   parks: Park[];
-  totalParks: string;
+  totalParks: number;
   cep: string;
   user: string;
-  delivery: string;
+  deadline: string;
   payment: string;
+  totalValue: number;
 };

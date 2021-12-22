@@ -1,23 +1,24 @@
 import type { NextPage } from 'next'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import styles from '../styles/Home.module.scss'
 import { useForm, useFieldArray } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { ParkValue } from '../interfaces';
 import Item from '../components/Item';
-import { useReactToPrint } from 'react-to-print';
-import PDF from '../components/PDF';
 import { BsTrash } from 'react-icons/bs'
+import { usePDF } from '../contexts/usePDF';
+import InputMask from 'react-input-mask';
 
 const Home: NextPage = () => {
 
   const [budgetType, setBudgetType] = useState<null | string>(null);
-  const printRef = useRef(null)
 
   const createBudgetSchema = yup.object().shape({
     user: yup.string().required("Cliente obrigatório"),
     cep: yup.string().required("CEP obrigatório"),
+    deadline: yup.string().required("CEP obrigatório"),
+    payment: yup.string().required("CEP obrigatório"),
     parks: yup.array().of(
       yup.object().shape({
         items: yup.array().of(
@@ -27,6 +28,7 @@ const Home: NextPage = () => {
         ),
         equipment: yup.string().required("Medida do equipamento obrigatória"),
         name: yup.string().required("Nome do parque obrigatório"),
+        painting: yup.string().required("Pintura obrigatória"),
         area: yup.string().required("Área de circulação obrigatória"),
         age: yup.string().required("Idade obrigatória"),
         material: yup.string().required("Material obrigatório"),
@@ -43,13 +45,12 @@ const Home: NextPage = () => {
   const { fields, remove, append } = useFieldArray<ParkValue>({ name: "parks", control })
 
   async function handleCreateBudget(data: ParkValue) {
+    data.totalParks = fields.length;
     console.log(data)
-    handlePrint()
+    setCurrentPDF(data)
   }
 
-  const handlePrint = useReactToPrint({
-    content: () => printRef.current,
-  });
+  const {setCurrentPDF} = usePDF();
 
   return (
     <div className={styles.container}>
@@ -174,17 +175,17 @@ const Home: NextPage = () => {
                         <input
                           id={`parks.${index}.value`}
                           type="text"
-                          placeholder='R$ 5.000,00'
+                          placeholder='5.000,00'
                           {...register(`parks.${index}.value`)}
                         />
                         <p>{formState.errors.parks && formState.errors.parks[index].value ? formState.errors.parks[index].value?.message : " "}</p>
                       </div>
                       <div className="inputFields">
-                        <label htmlFor={`parks.${index}.valueInstall`}>Valor da instalação {index}</label>
+                        <label htmlFor={`parks.${index}.valueInstall`}>Valor da instalação do Parque {index + 1}</label>
                         <input
                           id={`parks.${index}.valueInstall`}
                           type="text"
-                          placeholder='R$ 350,00'
+                          placeholder='350,00'
                           {...register(`parks.${index}.valueInstall`)}
                         />
                         <p>{formState.errors.parks && formState.errors.parks[index].valueInstall ? formState.errors.parks[index].valueInstall?.message : " "}</p>
@@ -195,11 +196,46 @@ const Home: NextPage = () => {
               )
             })
           }
-          <div className={styles.finish}>
+          <div className={styles.addPark}>
             <button type="button" onClick={() => append({ name: '' })}>Adicionar parque ao orçamento</button>
+          </div>
+          <h2>Dados de pagamento e entrega</h2>
+          <div className={styles.summary}>
+            <div className="inputFields">
+              <label htmlFor="deadline">Prazo</label>
+              <input
+                id="deadline"
+                type="text"
+                placeholder='18 a 30 de Janeiro'
+                {...register("deadline")}
+              />
+              <p>{formState.errors.user ? formState.errors.user.message : " "}</p>
+            </div>
+            <div className="inputFields">
+              <label htmlFor="payment">Parcelas do Pagamento</label>
+              <select
+                id="payment"
+                {...register("payment")}
+              >
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+              </select>
+              <p>{formState.errors.cep ? formState.errors.cep.message : " "}</p>
+            </div>
+          </div>
+          <div className={styles.finish}>
             <button type="submit">Finalizar orçamento</button>
           </div>
-          <p ref={printRef} style={{ display: 'none' }}>teste</p>
         </form>
       }
     </div>

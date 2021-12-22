@@ -32,6 +32,15 @@ a {
     max-width: 500px;
   }
 
+  select {
+    height: 44px;
+    border-radius: 4px;
+    border: 1px solid #000;
+    font-size: 16px;
+    padding: 0 10px;
+    max-width: 500px;
+  }
+
   p {
     margin-bottom: 12px;
     height: 5px;
@@ -124,5 +133,26 @@ button {
 @media (max-width: 720px) {
   html {
       font-size: 87.5%;
+  }
+  .inputFields {
+    div {
+      display: flex;
+      align-items: center;
+
+      margin-bottom: 10px;
+
+      input {
+        min-width: 50px;
+        margin-right: 10px;
+      }
+
+      svg {
+        color: #152e57;
+        transition: ease-in-out 0.25s;
+        &:hover {
+          color: #FB3640;
+        }
+      }
+    }
   }
 }
