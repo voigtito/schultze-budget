@@ -1,229 +1,197 @@
 import type { NextPage } from 'next'
-import { ReactElement, useState } from 'react'
+import { useRef, useState } from 'react'
 import styles from '../styles/Home.module.scss'
-import { SubmitHandler, useForm, useFieldArray, useFormContext, FormProvider, Control, UseFormRegister } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-
-interface Items {
-  name: string;
-};
-
-interface Park {
-  items: Items[];
-  equipment: string;
-  area: string;
-  age: string;
-  material: string;
-  painting: string;
-  value: number;
-  valueInstalll: number;
-  observations: string;
-}
-
-interface ParkValue {
-  parks: Park[];
-  totalParks: string;
-  cep: string;
-  user: string;
-  delivery: string;
-  payment: string;
-};
+import { ParkValue } from '../interfaces';
+import Item from '../components/Item';
+import { useReactToPrint } from 'react-to-print';
+import PDF from '../components/PDF';
+import { BsTrash } from 'react-icons/bs'
 
 const Home: NextPage = () => {
 
   const [budgetType, setBudgetType] = useState<null | string>(null);
+  const printRef = useRef(null)
 
-  const createProjectFormSchema = yup.object().shape({
-    equipment: yup.string().required("Medida do equipamento obrigatória"),
-    area: yup.string().required("Área de circulação obrigatória"),
-    age: yup.string().required("Idade obrigatória"),
-    material: yup.string().required("Material obrigatório"),
-    value: yup.string().required("Valor dos items obrigatório"),
-    valueInstalll: yup.string().required("Valor de instalação obrigatório"),
-    items: yup.array().of(
+  const createBudgetSchema = yup.object().shape({
+    user: yup.string().required("Cliente obrigatório"),
+    cep: yup.string().required("CEP obrigatório"),
+    parks: yup.array().of(
       yup.object().shape({
-        name: yup.string().required("Nome do item obrigatório"),
+        items: yup.array().of(
+          yup.object().shape({
+            name: yup.string().notRequired(),
+          })
+        ),
+        equipment: yup.string().required("Medida do equipamento obrigatória"),
+        area: yup.string().required("Área de circulação obrigatória"),
+        age: yup.string().required("Idade obrigatória"),
+        material: yup.string().required("Material obrigatório"),
+        value: yup.string().required("Valor dos items obrigatório"),
+        valueInstall: yup.string().required("Valor de instalação obrigatório")
       })
     )
   })
 
-  const { control, handleSubmit, register } = useForm<ParkValue>({
-    resolver: yupResolver(createProjectFormSchema)
+  const { control, handleSubmit, register, formState } = useForm<ParkValue>({
+    resolver: yupResolver(createBudgetSchema)
   })
 
   const { fields, remove, append } = useFieldArray<ParkValue>({ name: "parks", control })
 
-  async function handleCreateBudget() {
-
+  async function handleCreateBudget(data: ParkValue) {
+    console.log(data)
+    handlePrint()
   }
+
+  const handlePrint = useReactToPrint({
+    content: () => printRef.current,
+  });
 
   return (
     <div className={styles.container}>
-      <h1>Preencha os dados de seu orçamento!</h1>
-      <section>
-        <h2>Selecione o tipo de orçamento</h2>
-        <button onClick={() => setBudgetType("Parque")}>Parque</button>
+      <h1>Preencha os dados de seu orçamento</h1>
+      <section className={styles.type}>
+        <h2>Selecione o tipo</h2>
+        <button type="button" onClick={() => setBudgetType("Parque")}>Parque</button>
       </section>
+      <img src="/christmas.svg" alt="christmas" className={styles.image} />
       {
         budgetType === "Parque"
         &&
-        <form onSubmit={handleSubmit(handleCreateBudget)}>
-          <h2>Orçamento</h2>
-          <div className={styles.inputFields}>
-            <label htmlFor="totalParks">Total de itens do pedido</label>
-            <input
-              id="totalParks"
-              type="text"
-              placeholder='2 parques'
-              {...register("totalParks")}
-            />
-          </div>
-          <div className={styles.inputFields}>
-            <label htmlFor="user">Cliente</label>
-            <input
-              id="user"
-              type="text"
-              placeholder='Nome da empresa ou cliente'
-              {...register("user")}
-            />
-          </div>
-          <div className={styles.inputFields}>
-            <label htmlFor="cep">CEP do cliente</label>
-            <input
-              id="cep"
-              type="number"
-              {...register("cep")}
-            />
+        <form onSubmit={handleSubmit(handleCreateBudget)} className={styles.form}>
+          <h2>Dados básicos</h2>
+          <div className={styles.summary}>
+            <div className="inputFields">
+              <label htmlFor="user">Cliente</label>
+              <input
+                id="user"
+                type="text"
+                placeholder='Nome da empresa ou cliente'
+                {...register("user")}
+              />
+              <p>{formState.errors.user ? formState.errors.user.message : " "}</p>
+            </div>
+            <div className="inputFields">
+              <label htmlFor="cep">CEP do cliente</label>
+              <input
+                id="cep"
+                type="text"
+                {...register("cep")}
+              />
+              <p>{formState.errors.cep ? formState.errors.cep.message : " "}</p>
+            </div>
           </div>
           <h2>Dados do orçamento</h2>
           {
             fields.map((park, index) => {
               return (
-                <div key={park.id}>
-                  <h2>Parque {index}</h2>
-                  <h3>Itens do Orçamento</h3>
-                  <Item control={control} indexOne={index} register={register} />
-                  <h3>Características do Parque</h3>
-                  <div className={styles.characteristics}>
-                    <div className={styles.inputFields}>
-                      <label htmlFor={`parks.${index}.equipment`}>Medida do equipamento</label>
-                      <input
-                        id={`parks.${index}.equipment`}
-                        type="text"
-                        placeholder='2,20 x 1,00 metros'
-                        {...register(`parks.${index}.equipment`)}
-                      />
-                    </div>
-                    <div className={styles.inputFields}>
-                      <label htmlFor={`parks.${index}.area`}>Área de circulação</label>
-                      <input
-                        id={`parks.${index}.area`}
-                        type="text"
-                        placeholder='4,80 x 3,00 metros'
-                        {...register(`parks.${index}.area`)}
-                      />
-                    </div>
-                    <div className={styles.inputFields}>
-                      <label htmlFor={`parks.${index}.age`}>Idade</label>
-                      <input
-                        id={`parks.${index}.age`}
-                        type="text"
-                        placeholder='5 à 12 anos'
-                        {...register(`parks.${index}.age`)}
-                      />
-
-                    </div>
-                    <div className={styles.inputFields}>
-                      <label htmlFor={`parks.${index}.material`}>Material</label>
-                      <input
-                        id={`parks.${index}.material`}
-                        type="text"
-                        placeholder='Madeira de lei (Itaúba)'
-                        {...register(`parks.${index}.material`)}
-                      />
-
-                    </div>
-                    <div className={styles.inputFields}>
-                      <label htmlFor={`parks.${index}.painting`}>Pintura</label>
-                      <input
-                        id={`parks.${index}.painting`}
-                        type="text"
-                        placeholder='Madeira de lei (Itaúba)'
-                        {...register(`parks.${index}.painting`)}
-                      />
-
-                    </div>
-                    <div className={styles.inputFields}>
-                      <label htmlFor={`parks.${index}.observations`}>Observações adicionais</label>
-                      <input
-                        id={`parks.${index}.observations`}
-                        type="text"
-                        placeholder='Observações extras ao parque'
-                        {...register(`parks.${index}.observations`)}
-                      />
-                    </div>
-                    <div className={styles.inputFields}>
-                      <label htmlFor={`parks.${index}.value`}>Valor do parque {index}</label>
-                      <input
-                        id={`parks.${index}.value`}
-                        type="text"
-                        placeholder='R$ 5.000,00'
-                        {...register(`parks.${index}.value`)}
-                      />
-                    </div>
-                    <div className={styles.inputFields}>
-                      <label htmlFor={`parks.${index}.valueInstalll`}>Valor da instalação {index}</label>
-                      <input
-                        id={`parks.${index}.valueInstalll`}
-                        type="text"
-                        placeholder='R$ 350,00'
-                        {...register(`parks.${index}.valueInstalll`)}
-                      />
+                <div key={park.id} className={styles.park}>
+                  <div>
+                    <h2>Parque {index + 1}</h2>
+                    <BsTrash onClick={() => remove(index)} color="#0b1a31" size={20} cursor="pointer" title="Deletar parque" />
+                  </div>
+                  <div>
+                    <h3>Itens do Parque</h3>
+                    <Item formState={formState} control={control} indexOne={index} register={register} />
+                    <h3>Características do Parque</h3>
+                    <div className={styles.characteristics}>
+                      <div className="inputFields">
+                        <label htmlFor={`parks.${index}.equipment`}>Medida do equipamento</label>
+                        <input
+                          id={`parks.${index}.equipment`}
+                          type="text"
+                          placeholder='2,20 x 1,00 metros'
+                          {...register(`parks.${index}.equipment`)}
+                        />
+                        <p>{formState.errors.parks && formState.errors.parks[index].equipment ? formState.errors.parks[index].equipment?.message : " "}</p>
+                      </div>
+                      <div className="inputFields">
+                        <label htmlFor={`parks.${index}.area`}>Área de circulação</label>
+                        <input
+                          id={`parks.${index}.area`}
+                          type="text"
+                          placeholder='4,80 x 3,00 metros'
+                          {...register(`parks.${index}.area`)}
+                        />
+                        <p>{formState.errors.parks && formState.errors.parks[index].area ? formState.errors.parks[index].area?.message : " "}</p>
+                      </div>
+                      <div className="inputFields">
+                        <label htmlFor={`parks.${index}.age`}>Idade</label>
+                        <input
+                          id={`parks.${index}.age`}
+                          type="text"
+                          placeholder='5 à 12 anos'
+                          {...register(`parks.${index}.age`)}
+                        />
+                        <p>{formState.errors.parks && formState.errors.parks[index].age ? formState.errors.parks[index].age?.message : " "}</p>
+                      </div>
+                      <div className="inputFields">
+                        <label htmlFor={`parks.${index}.material`}>Material</label>
+                        <input
+                          id={`parks.${index}.material`}
+                          type="text"
+                          placeholder='Madeira de lei (Itaúba)'
+                          {...register(`parks.${index}.material`)}
+                        />
+                        <p>{formState.errors.parks && formState.errors.parks[index].material ? formState.errors.parks[index].material?.message : " "}</p>
+                      </div>
+                      <div className="inputFields">
+                        <label htmlFor={`parks.${index}.painting`}>Pintura</label>
+                        <input
+                          id={`parks.${index}.painting`}
+                          type="text"
+                          placeholder='Madeira de lei (Itaúba)'
+                          {...register(`parks.${index}.painting`)}
+                        />
+                        <p>{formState.errors.parks && formState.errors.parks[index].painting ? formState.errors.parks[index].painting?.message : " "}</p>
+                      </div>
+                      <div className="inputFields">
+                        <label htmlFor={`parks.${index}.observations`}>Observações adicionais</label>
+                        <input
+                          id={`parks.${index}.observations`}
+                          type="text"
+                          placeholder='Observações extras ao parque'
+                          {...register(`parks.${index}.observations`)}
+                        />
+                        <p>{formState.errors.parks && formState.errors.parks[index].observations ? formState.errors.parks[index].observations?.message : " "}</p>
+                      </div>
+                      <div className="inputFields">
+                        <label htmlFor={`parks.${index}.value`}>Valor do parque {index}</label>
+                        <input
+                          id={`parks.${index}.value`}
+                          type="text"
+                          placeholder='R$ 5.000,00'
+                          {...register(`parks.${index}.value`)}
+                        />
+                        <p>{formState.errors.parks && formState.errors.parks[index].value ? formState.errors.parks[index].value?.message : " "}</p>
+                      </div>
+                      <div className="inputFields">
+                        <label htmlFor={`parks.${index}.valueInstall`}>Valor da instalação {index}</label>
+                        <input
+                          id={`parks.${index}.valueInstall`}
+                          type="text"
+                          placeholder='R$ 350,00'
+                          {...register(`parks.${index}.valueInstall`)}
+                        />
+                        <p>{formState.errors.parks && formState.errors.parks[index].valueInstall ? formState.errors.parks[index].valueInstall?.message : " "}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               )
             })
           }
-          <button onClick={() => append({ name: '' })}>Adicionar parque ao orçamento</button>
+          <div className={styles.finish}>
+            <button type="button" onClick={() => append({ name: '' })}>Adicionar parque ao orçamento</button>
+            <button type="submit">Finalizar orçamento</button>
+          </div>
+          <p ref={printRef} style={{ display: 'none' }}>teste</p>
         </form>
       }
     </div>
-  )
-}
-
-interface ItemInterface {
-  indexOne: number;
-  control: Control<ParkValue, object>;
-  register: UseFormRegister<ParkValue>;
-}
-
-export const Item = ({ control, indexOne, register }: ItemInterface) => {
-
-  const { fields, remove, append } = useFieldArray({ name: `parks.${indexOne}.items`, control })
-
-  return (
-    <>
-      {
-        fields.map((field, index) => {
-          return (
-            <div key={index} >
-            <div className={styles.inputFields}>
-              <label htmlFor={`parks.${indexOne}.items.${index}.name`}>Item {index}</label>
-              <input
-                id={`parks.${indexOne}.items.${index}.name`}
-                type="text"
-                {...register(`parks.${indexOne}.items.${index}.name`)}
-              />
-            </div>
-            <button onClick={() => remove(index)}>Remover item do orçamento</button>
-            </div>
-          )
-        })
-      }
-      <button onClick={() => append({ name: '' })}>Adicionar item ao orçamento</button>
-    </>
   )
 }
 
